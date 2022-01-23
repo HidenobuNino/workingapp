@@ -60,14 +60,7 @@ export default {
             /** 入力したデータが有効かどうか */
             valid: false,
             /** 設定 */
-            settings: {
-                appName: 'testApp',
-                apiUrl: '',
-                authToken: '',
-                strMountItems: 'TEST1001, TEST1002, TEST1003',
-                strRemoveItems: 'TEST1001, TEST1002, TEST1003',
-                strTagItem: '問い合わせ, トラブル'
-            },
+            settings: { ...this.$store.state.settings },
 
             /** バリデーションルール */
             appNameRule: v => v.length <= 30 || '30文字以内で入力してください',
@@ -82,7 +75,7 @@ export default {
 
     methods: {
         onClickSave () {
-
+            this.$store.dispatch('saveSettings', { settings: this.settings })
         }
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <v-app-bar app color="green" dark>
-      <v-toolbar-title>TEST</v-toolbar-title>
+    <v-app-bar app color="blue" dark>
+      <v-toolbar-title>{{ appName }}</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon to="/">
         <v-icon>mdi-file-table-outline</v-icon>
@@ -20,12 +20,17 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 
 export default {
   name: 'App',
 
-  data: () => ({
-    //
+  computed: mapState({
+    appName: state => state.settings.appName
   }),
-};
+
+  beforeCreate () {
+    this.$store.dispatch('loadSettings')
+  }
+}
 </script>
