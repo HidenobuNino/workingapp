@@ -20,7 +20,6 @@
             :return-value.sync="date"
             transition="scale-transition"
             offset-y
-            max-width="290px"
             min-width="290px"
           >
             <template v-slot:activator="{ on }">
@@ -53,17 +52,20 @@
             :items="categoryItems"
             hide-details
           />
-          <!-- タグ -->
+          <!-- 取付部品 -->
           <v-select
-            label="タグ"
-            v-model="tags"
-            :items="tagItems"
-            multiple
-            chips
-            :rules="[tagRule]"
+            label="取付部品"
+            v-model="mounts"
+            :items="mountItems"
+          />
+          <!-- 取外部品 -->
+          <v-select
+            label="取外し部品"
+            v-model="removes"
+            :items="removeItems"
           />
           <!-- メモ -->
-          <v-text-field
+          <v-textarea
             label="メモ"
             v-model="memo"
             :counter="300"
@@ -97,6 +99,8 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex'
+
 export default {
   name: 'DataDialog',
 
@@ -119,15 +123,20 @@ export default {
       date: '',
       /** カテゴリ */
       category: '',
-      /** タグ */
-      tags: [],
+      /** 取付部品 */
+      mounts: '',
+      /** 取外し部品 */
+      removes: '',
       /** メモ */
       memo: '',
 
       /** 選択カテゴリ一覧 */
-      categoryItems: [],
-      /** タグリスト */
-      tagItems: ['タグ1', 'タグ2'],
+      //categoryItems: [],
+      /** 部品一覧 */
+      //mountItems: [],
+      /** 部品一覧 */
+      //removeItems: [],
+      
       /** 編集前の年月（編集時に使う） */
       beforeYM: '',
 
@@ -139,6 +148,13 @@ export default {
   },
 
   computed: {
+    ...mapGetters([
+      /** 各種カテゴリ */
+      'categoryItems',
+      'mountItems',
+      'removeItems'
+    ]),
+
     /** ダイアログのタイトル */
     titleText () {
       return this.actionType === 'add' ? 'データ追加' : 'データ編集'
@@ -150,6 +166,11 @@ export default {
   },
 
   methods: {
+    ...mapActions([
+      'addAbData',
+      'updateAbData'
+    ]),
+
     /**
      * ダイアログを表示します。
      * このメソッドは親から呼び出されます。
@@ -169,7 +190,23 @@ export default {
     },
     /** 追加／更新がクリックされたとき */
     onClickAction () {
-      // あとで実装
+      const item = {
+        date: this.date,
+        category: this.category,
+        mounts: this.mounts,
+        removes: this.removes,
+        memo: this.memo,
+      }
+
+      if (this.actionType === 'add') {
+        item.id = Math.random().toString(36).slice(-8)
+        this.addAbData({ item })
+      } else {
+        item.id = this.id
+        this.updateAbData({ beforeYM: this.beforeYM, item})
+      }
+
+      this.show = false
     },
     /** フォームの内容を初期化します */
     resetForm (item = {}) {
@@ -182,7 +219,8 @@ export default {
       this.date = item.date || `${year}-${month}-${date}`
 
       this.category = item.category || this.categoryItems[0]
-      this.tags = item.tags ? item.tags.split(',') : []
+      this.mounts = item.mounts || this.mountItems[0]
+      this.removes = item.removes || this.removeItems[0]
       this.memo = item.memo || ''
 
       this.$refs.form.resetValidation()

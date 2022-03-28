@@ -2,21 +2,33 @@
   <div>
     <v-card>
       <v-card-title>
-        <!-- 月選択 -->
+        <!-- ファイル選択 -->
         <v-col cols="8">
           <v-select
             v-model="e1"
+            item-text="name"
+            item-value="sheetId"
             :items="companies"
             menu-props="{ offsetY: true }"
             label="閲覧するデータを選択します"
             hide-details
             prepend-icon="mdi-map"
           ></v-select>
+          <v-card-actions class="ma-4">
+            <v-radio-group v-model="sheetname">
+              <v-radio
+                v-for="n in 3"
+                :key="n"
+                :value="n"
+              >
+              </v-radio>
+            </v-radio-group>
+          </v-card-actions>
         </v-col>
         <v-spacer/>
         <!-- 追加ボタン -->
         <v-col class="text-right" cols="4">
-          <v-btn dark color="green" @click="onClickAdd">
+          <v-btn dark color="blue" @click="onClickAdd">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-col>
@@ -31,6 +43,8 @@
           />
         </v-col>
       </v-card-title>
+      <!-- タブ -->
+      
       <!-- テーブル -->
       <v-data-table
         class="text-no-wrap"
@@ -44,6 +58,9 @@
         :items-per-page="30"
         mobile-breakpoint="0"
       >
+      <template v-slot:[`item.memo`]="{ item }">
+        <div style="white-space: pre;">{{ item.memo }}</div>
+      </template>
       <!-- 追加／編集ボタン -->
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon class="mr-2" @click="onClickEdit(item)">mdi-pencil</v-icon>
@@ -65,6 +82,7 @@
 </style>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import DataDialog from '../components/DataDialog.vue'
 import DeleteDialog from '../components/DeleteDialog.vue'
 
@@ -81,28 +99,29 @@ import DeleteDialog from '../components/DeleteDialog.vue'
       menu: false,
       /** 検索文字 */
       search: '',
-
-      e1: 'company1',
-      companies: [
-        'company1', 'company2', 'company3',
-      ],
+      test: 'test',
+      e1: '',
+      companies: [],
       /** テーブルに表示させるデータ */
-      tableData: [
-        /** サンプルデータ */
-        { id: 'a34109ed', date: '2020-06-01', category: 'トラブル', mount: 'a', remove: 'b',  memo: 'メモメモメモメモメモメモ' },
-        { id: '7c8fa764', date: '2020-06-02', category: '問い合わせ', mount: 't', remove: 'y',  memo: 'メモ' }
-      ]
+      tableData: []
     }
   },
 
   computed: {
+    ...mapState({
+      /** データを取得 */
+      companyData: state => state.companyData,
+      abData: state => state.abData
+    }),
+
+
     /** テーブルのヘッダー設定 */
     tableHeaders () {
       return [
-        { text: 'カテゴリ', value: 'category', sortable: false },
         { text: '日付', value: 'date', align: 'end' },
-        { text: '取付部品', value: 'mount', sortable: false },
-        { text: '取外部品', value: 'remove', sortable: false },
+        { text: 'カテゴリ', value: 'category', sortable: false },
+        { text: '取付部品', value: 'mounts', sortable: false },
+        { text: '取外部品', value: 'removes', sortable: false },
         { text: 'メモ', value: 'memo', sortable: false },
         { text: '写真', value: 'photo', sortable: false },
         { text: '操作', value: 'actions', sortable: false }
@@ -116,6 +135,34 @@ import DeleteDialog from '../components/DeleteDialog.vue'
   },
 
   methods: {
+    ...mapActions([
+      'fetchCompanyData',
+      'fetchAbData'
+    ]),
+
+    updateCompanyList () {
+      const key = this.test
+      const companyList = this.companyData[key]
+
+      if (companyList) {
+        this.companies = companyList
+      } else {
+        this.fetchCompanyData({ key })
+        this.companies = this.companyData[key]
+      }
+    },
+
+    updateTable () {
+      const list = this.abData
+
+      if (list) {
+        this.tableData = list
+      } else {
+        this.fetchAbData
+        this.tableData = this.abData
+      }
+    },
+
     onClickAdd () {
       this.$refs.dataDialog.open('add')
     },
@@ -127,6 +174,11 @@ import DeleteDialog from '../components/DeleteDialog.vue'
     onClickDelete (item) {
       this.$refs.deleteDialog.open(item)
     }
+  },
+
+  created () {
+    this.updateCompanyList()
+    this.updateTable()
   }
 }
 </script>

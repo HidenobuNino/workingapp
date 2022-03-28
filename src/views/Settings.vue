@@ -15,17 +15,24 @@
         label="API URL"
         v-model="settings.apiUrl"
         :counter="150"
-        :rules="[stringRules]"
+        :rules="[stringRule]"
       />
       <!-- Auth Token -->
       <v-text-field
         label="Auth Token"
         v-model="settings.authToken"
         :counter="150"
-        :rules="[stringRules]"
+        :rules="[stringRule]"
       />
       <h3>カテゴリ／タグ設定</h3>
       <p>カンマ（ &#44; ）区切りで入力してください</p>
+      <!-- カテゴリ -->
+      <v-text-field
+        label="カテゴリ"
+        v-model="settings.strCategoryItems"
+        :counter="150"
+        :rules="[stringRule, ...categoryRules]"
+      />
       <!-- 取付部品カテゴリ -->
       <v-text-field
         label="取付部品"

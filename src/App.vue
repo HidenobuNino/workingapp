@@ -29,6 +29,7 @@ export default {
     appName: state => state.settings.appName
   }),
 
+  //appインスタンス生成前に一度だけ実行される関数
   beforeCreate () {
     this.$store.dispatch('loadSettings')
   }
