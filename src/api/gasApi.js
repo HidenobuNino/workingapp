@@ -36,6 +36,7 @@ const setAuthToken = token => {
 
 /**
  * 指定フォルダ内の会社別ファイルを取得します
+ * @returns 
  */
 const getCompany = () => {
   return gasApi.get('')
@@ -43,6 +44,8 @@ const getCompany = () => {
 
 /**
  * 指定ファイル内にあるシートの一覧(名前)を取得します
+ * @param {*} sheetId 
+ * @returns 
  */
 const getSheetName = sheetId => {
   return gasApi.post('', {
@@ -54,10 +57,87 @@ const getSheetName = sheetId => {
   })
 }
 
+/**
+ * 指定したデータの一覧を取得します
+ * @param {*} sheetId 
+ * @param {*} sheetName 
+ * @returns 
+ */
+const fetch = (sheetId, sheetName) => {
+  return gasApi.post('', {
+    method: 'GET',
+    authToken,
+    params: {
+      sheetId,
+      sheetName
+    }
+  })
+}
+
+/**
+ * データを追加します
+ * @param {*} item 
+ * @param {*} sheetId 
+ * @param {*} sheetName 
+ * @returns 
+ */
+const add = (item, sheetId, sheetName) => {
+  return gasApi.post('', {
+    method: 'POST',
+    authToken,
+    params: {
+      item,
+      sheetId,
+      sheetName
+    }
+  })
+}
+
+/**
+ * データを更新します
+ * @param {*} item 
+ * @param {*} sheetId 
+ * @param {*} sheetName 
+ * @returns 
+ */
+const update = (item, sheetId, sheetName) => {
+  return gasApi.post('', {
+    method: 'PUT',
+    authToken,
+    params: {
+      item,
+      sheetId,
+      sheetName
+    }
+  })
+}
+
+/**
+ * 指定idのデータを削除します
+ * @param {*} sheetId 
+ * @param {*} sheetName 
+ * @param {*} id 
+ * @returns 
+ */
+const $delete = (sheetId, sheetName, id) => {
+  return gasApi.post('', {
+    method: 'DELETE',
+    authToken,
+    params: {
+      sheetId,
+      sheetName,
+      id
+    }
+  })
+}
 
 export default {
   setUrl,
   setAuthToken,
   getCompany,
-  getSheetName
+  getSheetName,
+  fetch,
+  add,
+  update,
+  delete: $delete,
 }

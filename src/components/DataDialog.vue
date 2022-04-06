@@ -99,21 +99,26 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'DataDialog',
 
+  props: [
+    "ids",
+    "names"
+  ],
+
   data () {
     return {
+
       /** ダイアログの表示状態 */
       show: false,
       /** 入力したデータが有効かどうか */
       valid: false,
       /** 日付選択メニューの表示状態 */
       menu: false,
-      /** ローディング状態 */
-      loading: false,
+
 
       /** 操作タイプ 'add' or 'edit' */
       actionType: 'add',
@@ -155,6 +160,11 @@ export default {
       'removeItems'
     ]),
 
+    ...mapState({
+      /** ローディング状態 */
+      loading: state => state.loading.add || state.loading.update
+    }),
+
     /** ダイアログのタイトル */
     titleText () {
       return this.actionType === 'add' ? 'データ追加' : 'データ編集'
@@ -189,7 +199,7 @@ export default {
       this.show = false
     },
     /** 追加／更新がクリックされたとき */
-    onClickAction () {
+    async onClickAction () {
       const item = {
         date: this.date,
         category: this.category,
@@ -198,12 +208,14 @@ export default {
         memo: this.memo,
       }
 
+      const sheetId = this.ids.sheetId
+      const sheetName = this.names.sheetName
+
       if (this.actionType === 'add') {
-        item.id = Math.random().toString(36).slice(-8)
-        this.addAbData({ item })
+        await this.addAbData({ item, sheetId, sheetName })
       } else {
         item.id = this.id
-        this.updateAbData({ beforeYM: this.beforeYM, item})
+        await this.updateAbData({ item, sheetId, sheetName })
       }
 
       this.show = false

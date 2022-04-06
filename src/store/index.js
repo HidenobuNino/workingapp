@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import gasApi from '../api/gasApi'
 
 Vue.use(Vuex)
 
@@ -10,8 +11,20 @@ Vue.use(Vuex)
 const state = {
   /** 会社ごとのファイル */
   companyData: {},
+  /** シートの一覧 */
+  sheetData: {},
   /** データ */
-  abData: [],
+  abData: {},
+  /** ローディング状態 */
+  loading: {
+    getCompany: false,
+    getSheetName: false,
+    fetch: false,
+    add: false,
+    update: false,
+  },
+  /** エラーメッセージ */
+  errorMessage: '',
   /** 設定 */
   settings: {
     appName: 'testApp',
@@ -28,42 +41,63 @@ const state = {
  * ActionsからStateを更新するとき呼ばれる
  */
 const mutations = {
+  /** v-selectの会社別ファイルのデータをセット */
   setCompanyData (state, { key,  companyList }) {
     state.companyData[key] = companyList
   },
 
-  /** 指定シートのデータをセットします */
-  setAbData (state, { list }) {
-    state.abData = list
+  /** シート名を指定してセットします */
+  setSheetData (state, { sheetId, sheetNameList }) {
+    state.sheetData[sheetId] = sheetNameList
   },
 
-  addAbData (state, { item }) {
-    const list = state.abData
+  /** 指定シートのデータをセットします */
+  setAbData (state, { sheetName, list }) {
+    state.abData[sheetName] = list
+  },
+
+  addAbData (state, { item, sheetName }) {
+    const list = state.abData[sheetName]
     if (list) {
       list.push(item)
     }
   },
 
-  updateAbData (state, { item }) {
-    const list = state.abData
+  updateAbData (state, { item, sheetName }) {
+    const list = state.abData[sheetName]
     if (list) {
       const index = list.findIndex(V => V.id === item.id)
       list.splice(index, 1, item)
     }
   },
 
-  deleteAbData (state, { id }) {
-    const list = state.abData
+  deleteAbData (state, { sheetName, id }) {
+    const list = state.abData[sheetName]
     if (list) {
       const index = list.findIndex(v => v.id === id)
       list.splice(index, 1)
     }
   },
 
+  /** ローディング状態のセット */
+  setLoading ( state, { type, v }) {
+    state.loading[type] = v
+  },
+
+  /** エラーメッセージのセット */
+  setErrorMessage ( state, { message }) {
+    state.errorMessage = message
+  },
+
   /** 設定を保存します */
   saveSettings (state, { settings }) {
     state.settings = { ...settings }
-    document.title = state.settings.appName
+    const { appName, apiUrl, authToken} = state.settings
+    document.title = appName
+    gasApi.setUrl(apiUrl)
+    gasApi.setAuthToken(authToken)
+    //テーブルデータを初期化
+    state.abData = {}
 
     localStorage.setItem('settings', JSON.stringify(settings))
   },
@@ -74,8 +108,10 @@ const mutations = {
     if (settings) {
       state.settings = Object.assign(state.settings, settings)
     }
-
-    document.title = state.settings.appName
+    const { appName, apiUrl, authToken} = state.settings
+    document.title = appName
+    gasApi.setUrl(apiUrl)
+    gasApi.setAuthToken(authToken)
   }
 }
 
@@ -85,47 +121,91 @@ const mutations = {
  */
 const actions = {
   /** 会社別のファイルを取得します */
-  fetchCompanyData ({ commit }, { key }) {
-    const companyList = [
-      { name: 'company1', sheetId: 'xxxxxxxxxxx'},
-      { name: 'company2', sheetId: 'xxxxxxxxxx'}
-    ]
+  async fetchCompanyData ({ commit }, { key }) {
+    const type = 'getCompany'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await gasApi.getCompany(key)
+      commit('setCompanyData', { key,  companyList: res.data })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+      commit('setCompanyData', { key, companyList: [] })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
+  },
 
-    commit('setCompanyData', { key,  companyList })
+  /** 指定ファイルのシート名一覧を取得します */
+  async fetchSheetData ({ commit }, { sheetId }) {
+    const type = 'getSheetName'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await gasApi.getSheetName(sheetId)
+      commit('setSheetData', { sheetId, sheetNameList: res.data })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+      commit('setSheetData', { sheetId, sheetNameList: [] })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
   },
 
   /** 指定シートのデータを取得します */
-  fetchAbData ({ commit }) {
-    // サンプルデータ
-    const list = [
-      { id: 'a34109ed', date: '2020-06-01', category: 'トラブル', mounts: 'TEST1001', removes: 'TEST1001',  memo: 'メモメモメモメモメモメモメ' },
-      { id: '7c8fa764', date: '2020-06-02', category: '問い合わせ', mounts: 'TEST1001', removes: 'TEST1001',  memo: 'メモ' },
-    ]
-
-    commit('setAbData', { list })
+  async fetchAbData ({ commit }, { sheetId, sheetName }) {
+    const type = 'fetch'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await gasApi.fetch(sheetId, sheetName)
+      commit('setAbData', { sheetName, list: res.data })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+      commit('setAbData', { sheetName, list: [] })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
   },
 
   /** データを追加します */
-  addAbData ({ commit }, { item }) {
-    commit('addAbData', { item })
+  async addAbData ({ commit }, { item, sheetId, sheetName }) {
+    const type = 'add'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await gasApi.add(item, sheetId, sheetName)
+      commit('addAbData', { sheetName, item: res.data })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
   },
 
   /** データを更新します */
-  updateAbData ({ commit }, { beforeYM, item }) {
-    const date = item.date
-    if (date === beforeYM) {
-      commit('updateAbData', { date, item })
-      return
+  async updateAbData ({ commit }, { item, sheetId, sheetName }) {
+    const type = 'update'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await gasApi.update(item, sheetId, sheetName)
+      commit('updateAbData', { sheetName, item: res.data })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+    } finally {
+      commit('setLoading', { type, v: false })
     }
-    const id = item.id
-    commit('deleteAbData', { date: beforeYM, id })
-    commit('addAbData', { item })
   },
 
   /** データを削除します */
-  deleteAbData ({ commit }, { item }) {
+  async deleteAbData ({ commit }, { item, sheetId, sheetName }) {
+    const type = 'delete'
     const id = item.id
-    commit('deleteAbData', { id })
+    commit('setLoading', { type, v: true })
+    try {
+      await gasApi.delete(sheetId, sheetName, id)
+      commit('deleteAbData', { sheetName, id })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
   },
   /** 設定を保存します */
   saveSettings ({ commit }, { settings }) {

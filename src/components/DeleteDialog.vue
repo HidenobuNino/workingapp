@@ -20,20 +20,28 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 export default {
   name: 'DeleteDialog',
+
+  props: [
+    "ids",
+    "names",
+  ],
 
   data () {
     return {
       /** ダイアログの表示状態 */
       show: false,
-      /** ローディング状態 */
-      loading: false,
       /** 受け取ったデータ */
       item: {}
     }
   },
+
+  computed: mapState({
+    /** ローディング状態 */
+    loading: state => state.loading.delete
+  }),
 
   methods: {
     ...mapActions([
@@ -54,8 +62,11 @@ export default {
       this.show = false
     },
     /** 削除がクリックされたとき */
-    onClickDelete () {
-      this.deleteAbData({ item: this.item })
+    async onClickDelete () {
+      const sheetId = this.ids.sheetId
+      const sheetName = this.names.sheetName
+
+      await this.deleteAbData({ sheetId, sheetName, item: this.item })
       this.show = false
     }
   }

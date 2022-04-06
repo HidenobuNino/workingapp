@@ -3,37 +3,37 @@
     <v-card>
       <v-card-title>
         <!-- ファイル選択 -->
-        <v-col cols="8">
+        <v-col cols="6">
           <v-select
             v-model="e1"
             item-text="name"
-            item-value="sheetId"
             :items="companies"
             menu-props="{ offsetY: true }"
             label="閲覧するデータを選択します"
             hide-details
             prepend-icon="mdi-map"
+            return-object
+            @change="updateSheetNameList()"
           ></v-select>
+          
+        </v-col>
+        <v-spacer/>
+        <v-col cols="6">
           <v-card-actions class="ma-4">
-            <v-radio-group v-model="sheetname">
+            <v-radio-group v-model="e2">
               <v-radio
-                v-for="n in 3"
-                :key="n"
-                :value="n"
+                v-for="sheet in sheets"
+                :key="sheet.sheetName"
+                :value="sheet"
+                :label="`${sheet.sheetName}`"
+                @click="updateTable()"
               >
               </v-radio>
             </v-radio-group>
           </v-card-actions>
         </v-col>
-        <v-spacer/>
-        <!-- 追加ボタン -->
-        <v-col class="text-right" cols="4">
-          <v-btn dark color="blue" @click="onClickAdd">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </v-col>
         <!-- 検索フォーム -->
-        <v-col cols="12">
+        <v-col cols="8">
           <v-text-field
             v-model="search"
             append-icon="mdi-magnify"
@@ -41,6 +41,12 @@
             single-line
             hide-details
           />
+        </v-col>
+        <!-- 追加ボタン -->
+        <v-col class="text-right" cols="4">
+          <v-btn dark color="blue" @click="onClickAdd">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
         </v-col>
       </v-card-title>
       <!-- タブ -->
@@ -69,9 +75,9 @@
       </v-data-table>
     </v-card>
     <!-- 追加／編集ダイアログ -->
-    <data-dialog ref="dataDialog"/>
+    <data-dialog :ids="e1" :names="e2" ref="dataDialog"/>
     <!-- 削除ダイアログ -->
-    <delete-dialog ref="deleteDialog"/>
+    <delete-dialog :ids="e1" :names="e2" ref="deleteDialog"/>
   </div>
 </template>
 
@@ -93,15 +99,15 @@ import DeleteDialog from '../components/DeleteDialog.vue'
   data () {
 
     return {
-      /** ローディング状態 */
-      loading: false,
-      /** 月選択メニューの状態 */
-      menu: false,
       /** 検索文字 */
       search: '',
-      test: 'test',
       e1: '',
+      e2: '',
+      test: 'tableKey',
+      /** v-selectに表示されるデータ */
       companies: [],
+      /** v-radioに表示されるデータ */
+      sheets: [],
       /** テーブルに表示させるデータ */
       tableData: []
     }
@@ -111,7 +117,10 @@ import DeleteDialog from '../components/DeleteDialog.vue'
     ...mapState({
       /** データを取得 */
       companyData: state => state.companyData,
-      abData: state => state.abData
+      sheetData: state => state.sheetData,
+      abData: state => state.abData,
+      /** ローディング状態 */
+      loading: state => state.loading.getCompany || state.loading.getSheetName || state.loading.fetch
     }),
 
 
@@ -137,29 +146,47 @@ import DeleteDialog from '../components/DeleteDialog.vue'
   methods: {
     ...mapActions([
       'fetchCompanyData',
+      'fetchSheetData',
       'fetchAbData'
     ]),
 
-    updateCompanyList () {
+    /** v-select 会社一覧の更新 */
+    async updateCompanyList () {
       const key = this.test
       const companyList = this.companyData[key]
 
       if (companyList) {
         this.companies = companyList
       } else {
-        this.fetchCompanyData({ key })
+        await this.fetchCompanyData({ key })
         this.companies = this.companyData[key]
       }
     },
 
-    updateTable () {
-      const list = this.abData
+    /** v-radio シート一覧の更新 */
+    async updateSheetNameList () {
+      const sheetId = this.e1.sheetId
+      const sheetNameList = this.sheetData[sheetId]
+
+      if (sheetNameList) {
+        this.sheets = sheetNameList
+      } else {
+        await this.fetchSheetData({ sheetId })
+        this.sheets = this.sheetData[sheetId]
+      }
+    },
+
+    /** v-data-table テーブル一覧の更新 */
+    async updateTable () {
+      const sheetId = this.e1.sheetId
+      const sheetName = this.e2.sheetName
+      const list = this.abData[sheetName]
 
       if (list) {
         this.tableData = list
       } else {
-        this.fetchAbData
-        this.tableData = this.abData
+        await this.fetchAbData({ sheetId, sheetName })
+        this.tableData = this.abData[sheetName]
       }
     },
 
@@ -178,7 +205,6 @@ import DeleteDialog from '../components/DeleteDialog.vue'
 
   created () {
     this.updateCompanyList()
-    this.updateTable()
   }
 }
 </script>
