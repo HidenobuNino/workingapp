@@ -64,12 +64,33 @@
             v-model="removes"
             :items="removeItems"
           />
+          <!-- 部品詳細 -->
+          <v-text-field
+            label="部品詳細"
+            v-model="parts"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 部品No -->
+          <v-text-field
+            label="部品No"
+            v-model="serialNo"
+            :counter="100"
+            :rules="[partsRule]"
+          />
           <!-- メモ -->
           <v-textarea
             label="メモ"
             v-model="memo"
-            :counter="300"
+            :counter="500"
             :rules="[memoRule]"
+          />
+          <!-- 写真  -->
+          <v-text-field
+            label="写真ID"
+            v-model="photo"
+            :counter="100"
+            :rules="[partsRule]"
           />
         </v-form>
       </v-card-text>
@@ -105,6 +126,7 @@ export default {
   name: 'DataDialog',
 
   props: [
+    /** 親から受け取るシート名,ID */
     "ids",
     "names"
   ],
@@ -132,23 +154,22 @@ export default {
       mounts: '',
       /** 取外し部品 */
       removes: '',
+      /** 部品詳細 */
+      parts: '',
+      /** 部品No */
+      serialNo: '',
       /** メモ */
       memo: '',
-
-      /** 選択カテゴリ一覧 */
-      //categoryItems: [],
-      /** 部品一覧 */
-      //mountItems: [],
-      /** 部品一覧 */
-      //removeItems: [],
+      /** 写真ID */
+      photo: '',
       
       /** 編集前の年月（編集時に使う） */
       beforeYM: '',
 
       /** バリデーションルール */
-      tagRule: v => v.length <= 5 || 'タグは5種類以内で選択してください',
-      
-      memoRule: v => v.length <= 300 || 'メモは300文字以内で入力してください'
+      partsRule: v => v.length <= 100 || '100文字以内で入力してください',
+      memoRule: v => v.length <= 300 || 'メモは500文字以内で入力してください',
+
     }
   },
 
@@ -205,7 +226,10 @@ export default {
         category: this.category,
         mounts: this.mounts,
         removes: this.removes,
+        parts: this.parts,
+        serialNo: this.serialNo,
         memo: this.memo,
+        photo: this.photo
       }
 
       const sheetId = this.ids.sheetId
@@ -233,7 +257,10 @@ export default {
       this.category = item.category || this.categoryItems[0]
       this.mounts = item.mounts || this.mountItems[0]
       this.removes = item.removes || this.removeItems[0]
+      this.parts = item.parts || ''
+      this.serialNo = item.serialNo || ''
       this.memo = item.memo || ''
+      this.photo = item.photo || ''
 
       this.$refs.form.resetValidation()
     }

@@ -74,13 +74,13 @@ export default {
             stringRule: v => v.length <= 150 || '150文字以内で入力してください',
             categoryRules: [
                 v => createItems(v).length !== 0 || 'カテゴリは一つ以上必要です',
-                v => itemMaxLength(v) <= 5 || '各カテゴリは5文字以内で入力してください'
-            ],
-            tagRule: v => itemMaxLength(v) <= 5 || '各タグは5文字以内で入力してください'
+                v => itemMaxLength(v) <= 20 || '各カテゴリは20文字以内で入力してください'
+            ]
         }
     },
 
     methods: {
+        /** 保存ボタンを押したとき */
         onClickSave () {
             this.$store.dispatch('saveSettings', { settings: this.settings })
         }

@@ -11,13 +11,14 @@
             menu-props="{ offsetY: true }"
             label="閲覧するデータを選択します"
             hide-details
-            prepend-icon="mdi-map"
+            prepend-icon="mdi-folder-account"
             return-object
             @change="updateSheetNameList()"
           ></v-select>
-          
         </v-col>
+
         <v-spacer/>
+        <!-- シート選択 -->
         <v-col cols="6">
           <v-card-actions class="ma-4">
             <v-radio-group v-model="e2">
@@ -49,7 +50,6 @@
           </v-btn>
         </v-col>
       </v-card-title>
-      <!-- タブ -->
       
       <!-- テーブル -->
       <v-data-table
@@ -66,6 +66,10 @@
       >
       <template v-slot:[`item.memo`]="{ item }">
         <div style="white-space: pre;">{{ item.memo }}</div>
+      </template>
+      <!-- 写真ボタン -->
+      <template v-slot:[`item.photo`]="{ item }">
+        <v-icon @click="onClickCamera(item.photo)">mdi-camera-outline</v-icon>
       </template>
       <!-- 追加／編集ボタン -->
       <template v-slot:[`item.actions`]="{ item }">
@@ -131,6 +135,8 @@ import DeleteDialog from '../components/DeleteDialog.vue'
         { text: 'カテゴリ', value: 'category', sortable: false },
         { text: '取付部品', value: 'mounts', sortable: false },
         { text: '取外部品', value: 'removes', sortable: false },
+        { text: '部品詳細', value: 'parts', sortable: false },
+        { text: '部品No', value: 'serialNo', sortable: false },
         { text: 'メモ', value: 'memo', sortable: false },
         { text: '写真', value: 'photo', sortable: false },
         { text: '操作', value: 'actions', sortable: false }
@@ -200,6 +206,11 @@ import DeleteDialog from '../components/DeleteDialog.vue'
 
     onClickDelete (item) {
       this.$refs.deleteDialog.open(item)
+    },
+
+    onClickCamera (item) {
+      const url = `https://drive.google.com/file/d/${ item }/view`
+      window.open(url, '_blank', 'noreferrer')
     }
   },
 

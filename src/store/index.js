@@ -92,7 +92,7 @@ const mutations = {
   /** 設定を保存します */
   saveSettings (state, { settings }) {
     state.settings = { ...settings }
-    const { appName, apiUrl, authToken} = state.settings
+    const { appName, apiUrl, authToken } = state.settings
     document.title = appName
     gasApi.setUrl(apiUrl)
     gasApi.setAuthToken(authToken)
@@ -108,7 +108,7 @@ const mutations = {
     if (settings) {
       state.settings = Object.assign(state.settings, settings)
     }
-    const { appName, apiUrl, authToken} = state.settings
+    const { appName, apiUrl, authToken } = state.settings
     document.title = appName
     gasApi.setUrl(apiUrl)
     gasApi.setAuthToken(authToken)
