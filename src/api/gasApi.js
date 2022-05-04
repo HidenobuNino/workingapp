@@ -131,6 +131,23 @@ const $delete = (sheetId, sheetName, id) => {
   })
 }
 
+/**
+ * 指定のファイルに新規テンプレートを追加
+ * @param {*} sheetId 
+ * @param {*} givenSheetName 
+ * @returns 
+ */
+const insertTemplate = (sheetId, givenSheetName) => {
+  return gasApi.post('', {
+    method: 'INSERT',
+    authToken,
+    params: {
+      sheetId,
+      givenSheetName
+    }
+  })
+}
+
 export default {
   setUrl,
   setAuthToken,
@@ -140,4 +157,5 @@ export default {
   add,
   update,
   delete: $delete,
+  insertTemplate
 }

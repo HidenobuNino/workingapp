@@ -24,29 +24,34 @@
         :counter="150"
         :rules="[stringRule]"
       />
+      <v-text-field
+        label="テンプレートURL"
+        v-model="settings.templateUrl"
+        :counter="150"
+        :rules="[stringRule]"
+      />
+      <!--
       <h3>カテゴリ／タグ設定</h3>
       <p>カンマ（ &#44; ）区切りで入力してください</p>
-      <!-- カテゴリ -->
       <v-text-field
         label="カテゴリ"
         v-model="settings.strCategoryItems"
         :counter="150"
         :rules="[stringRule, ...categoryRules]"
       />
-      <!-- 取付部品カテゴリ -->
       <v-text-field
         label="取付部品"
         v-model="settings.strMountItems"
         :counter="150"
         :rules="[stringRule, ...categoryRules]"
       />
-      <!-- 取外部品カテゴリ -->
       <v-text-field
         label="取外部品"
         v-model="settings.strRemoveItems"
         :counter="150"
         :rules="[stringRule, ...categoryRules]"
       />
+      -->
       <v-row class="mt-4">
         <v-spacer/>
         <v-btn color="primary" :disabled="!valid" @click="onClickSave">保存</v-btn>

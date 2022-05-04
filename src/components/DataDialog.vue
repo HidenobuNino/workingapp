@@ -46,35 +46,54 @@
           </v-menu>
 
           <!-- カテゴリ -->
-          <v-select
+          <v-text-field
             label="カテゴリ"
             v-model="category"
             :items="categoryItems"
-            hide-details
-          />
-          <!-- 取付部品 -->
-          <v-select
-            label="取付部品"
-            v-model="mounts"
-            :items="mountItems"
-          />
-          <!-- 取外部品 -->
-          <v-select
-            label="取外し部品"
-            v-model="removes"
-            :items="removeItems"
-          />
-          <!-- 部品詳細 -->
-          <v-text-field
-            label="部品詳細"
-            v-model="parts"
             :counter="100"
             :rules="[partsRule]"
           />
-          <!-- 部品No -->
+          <!-- 取付部品 -->
           <v-text-field
-            label="部品No"
-            v-model="serialNo"
+            label="取付部品"
+            v-model="mounts"
+            :items="mountItems"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 取付部品詳細 -->
+          <v-text-field
+            label="取付部品詳細"
+            v-model="mountparts"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 取付部品No -->
+          <v-text-field
+            label="取付部品No"
+            v-model="mountNo"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 取外部品 -->
+          <v-text-field
+            label="取外し部品"
+            v-model="removes"
+            :items="removeItems"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 取外し部品詳細 -->
+          <v-text-field
+            label="取外し部品詳細"
+            v-model="removeparts"
+            :counter="100"
+            :rules="[partsRule]"
+          />
+          <!-- 取外し部品No -->
+          <v-text-field
+            label="取外し部品No"
+            v-model="removeNo"
             :counter="100"
             :rules="[partsRule]"
           />
@@ -82,7 +101,7 @@
           <v-textarea
             label="メモ"
             v-model="memo"
-            :counter="500"
+            :counter="1000"
             :rules="[memoRule]"
           />
           <!-- 写真  -->
@@ -152,12 +171,16 @@ export default {
       category: '',
       /** 取付部品 */
       mounts: '',
+      /** 取付部品詳細 */
+      mountparts: '',
+      /** 取付部品No */
+      mountNo: '',
       /** 取外し部品 */
       removes: '',
-      /** 部品詳細 */
-      parts: '',
-      /** 部品No */
-      serialNo: '',
+      /** 取外し部品詳細 */
+      removeparts: '',
+      /** 取外し部品No */
+      removeNo: '',
       /** メモ */
       memo: '',
       /** 写真ID */
@@ -168,7 +191,7 @@ export default {
 
       /** バリデーションルール */
       partsRule: v => v.length <= 100 || '100文字以内で入力してください',
-      memoRule: v => v.length <= 300 || 'メモは500文字以内で入力してください',
+      memoRule: v => v.length <= 1000 || 'メモは1000文字以内で入力してください',
 
     }
   },
@@ -225,9 +248,11 @@ export default {
         date: this.date,
         category: this.category,
         mounts: this.mounts,
+        mountparts: this.mountparts,
+        mountNo: this.mountNo,
         removes: this.removes,
-        parts: this.parts,
-        serialNo: this.serialNo,
+        removeparts: this.removeparts,
+        removeNo: this.removeNo,
         memo: this.memo,
         photo: this.photo
       }
@@ -254,11 +279,13 @@ export default {
       this.id = item.id || ''
       this.date = item.date || `${year}-${month}-${date}`
 
-      this.category = item.category || this.categoryItems[0]
-      this.mounts = item.mounts || this.mountItems[0]
-      this.removes = item.removes || this.removeItems[0]
-      this.parts = item.parts || ''
-      this.serialNo = item.serialNo || ''
+      this.category = item.category || ''
+      this.mounts = item.mounts || ''
+      this.mountparts = item.mountparts || ''
+      this.mountNo = item.mountNo || ''
+      this.removes = item.removes || ''
+      this.removeparts = item.removeparts || ''
+      this.removeNo = item.removeNo || ''
       this.memo = item.memo || ''
       this.photo = item.photo || ''
 

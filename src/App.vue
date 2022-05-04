@@ -6,6 +6,9 @@
       <v-btn icon to="/">
         <v-icon>mdi-file-table-outline</v-icon>
       </v-btn>
+      <v-btn icon @click="onClickTemplate">
+        <v-icon>mdi-clipboard-arrow-up-outline</v-icon>
+      </v-btn>
       <v-btn icon to="/settings">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
@@ -34,8 +37,16 @@ export default {
 
   computed: mapState({
     appName: state => state.settings.appName,
+    templateUrl: state => state.settings.templateUrl,
     errorMessage: state => state.errorMessage
   }),
+
+  methods: {
+    onClickTemplate () {
+      const url = this.templateUrl
+      window.open(url, '_blank', 'noreferrer')
+    }
+  },
 
   watch: {
     errorMessage () {

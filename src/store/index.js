@@ -22,6 +22,8 @@ const state = {
     fetch: false,
     add: false,
     update: false,
+    delete: false,
+    insert: false
   },
   /** エラーメッセージ */
   errorMessage: '',
@@ -30,6 +32,7 @@ const state = {
     appName: 'testApp',
     apiUrl: '',
     authToken: '',
+    templateUrl: '',
     strCategoryItems: '問い合わせ, トラブル',
     strMountItems: 'TEST1001, TEST1002, TEST1003',
     strRemoveItems: 'TEST1001, TEST1002, TEST1003',
@@ -76,6 +79,16 @@ const mutations = {
     if (list) {
       const index = list.findIndex(v => v.id === id)
       list.splice(index, 1)
+    }
+  },
+
+  addSheet (state, { sheetId, givenSheetName }) {
+    const list = state.sheetData[sheetId]
+    const tmp = {
+      sheetName: `${givenSheetName}`
+    }
+    if (list) {
+      list.push(tmp)
     }
   },
 
@@ -207,6 +220,21 @@ const actions = {
       commit('setLoading', { type, v: false })
     }
   },
+
+  /** 新規シートを追加します */
+  async addSheet ({ commit }, { sheetId, givenSheetName }) {
+    const type = 'insert'
+    commit('setLoading', { type, v: true })
+    try {
+      await gasApi.insertTemplate(sheetId, givenSheetName)
+      commit('addSheet', { sheetId, givenSheetName })
+    } catch (e) {
+      commit('setErrorMessage', { message: e })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
+  },
+
   /** 設定を保存します */
   saveSettings ({ commit }, { settings }) {
     commit('saveSettings', { settings })

@@ -34,7 +34,7 @@
           </v-card-actions>
         </v-col>
         <!-- 検索フォーム -->
-        <v-col cols="8">
+        <v-col cols="6">
           <v-text-field
             v-model="search"
             append-icon="mdi-magnify"
@@ -43,10 +43,14 @@
             hide-details
           />
         </v-col>
-        <!-- 追加ボタン -->
-        <v-col class="text-right" cols="4">
-          <v-btn dark color="blue" @click="onClickAdd">
+        <v-col class="text-right" cols="6">
+          <!-- 追加ボタン -->
+          <v-btn dark class="mr-4" color="blue" @click="onClickAdd">
             <v-icon>mdi-plus</v-icon>
+          </v-btn>
+          <!-- 新規シート追加ボタン -->
+          <v-btn dark color="blue-grey" @click="onClickInsert">
+            <v-icon>mdi-plus-box-multiple</v-icon>
           </v-btn>
         </v-col>
       </v-card-title>
@@ -69,7 +73,9 @@
       </template>
       <!-- 写真ボタン -->
       <template v-slot:[`item.photo`]="{ item }">
-        <v-icon @click="onClickCamera(item.photo)">mdi-camera-outline</v-icon>
+        <div v-if="item.photo !== ''">
+          <v-icon @click="onClickCamera(item.photo)">mdi-camera-outline</v-icon>
+        </div>
       </template>
       <!-- 追加／編集ボタン -->
       <template v-slot:[`item.actions`]="{ item }">
@@ -78,6 +84,8 @@
       </template>
       </v-data-table>
     </v-card>
+    <!-- シート追加ダイアログ -->
+    <add-sheet-dialog :ids="e1" ref="addSheetDialog"/>
     <!-- 追加／編集ダイアログ -->
     <data-dialog :ids="e1" :names="e2" ref="dataDialog"/>
     <!-- 削除ダイアログ -->
@@ -93,11 +101,12 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import AddSheetDialog from '../components/AddSheetDialog.vue'
 import DataDialog from '../components/DataDialog.vue'
 import DeleteDialog from '../components/DeleteDialog.vue'
 
   export default {
-  components: { DataDialog, DeleteDialog },
+  components: { DataDialog, DeleteDialog, AddSheetDialog },
   name: 'Home',
 
   data () {
@@ -134,9 +143,11 @@ import DeleteDialog from '../components/DeleteDialog.vue'
         { text: '日付', value: 'date', align: 'end' },
         { text: 'カテゴリ', value: 'category', sortable: false },
         { text: '取付部品', value: 'mounts', sortable: false },
+        { text: '取付詳細', value: 'mountparts', sortable: false },
+        { text: '取付No', value: 'mountNo', sortable: false },
         { text: '取外部品', value: 'removes', sortable: false },
-        { text: '部品詳細', value: 'parts', sortable: false },
-        { text: '部品No', value: 'serialNo', sortable: false },
+        { text: '取外詳細', value: 'removeparts', sortable: false },
+        { text: '取外No', value: 'removeNo', sortable: false },
         { text: 'メモ', value: 'memo', sortable: false },
         { text: '写真', value: 'photo', sortable: false },
         { text: '操作', value: 'actions', sortable: false }
@@ -198,6 +209,10 @@ import DeleteDialog from '../components/DeleteDialog.vue'
 
     onClickAdd () {
       this.$refs.dataDialog.open('add')
+    },
+
+    onClickInsert () {
+      this.$refs.addSheetDialog.open()
     },
 
     onClickEdit (item) {
